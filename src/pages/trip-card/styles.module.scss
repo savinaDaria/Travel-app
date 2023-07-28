@@ -1,0 +1,22 @@
+@import "../../assets/styles-common/trip-info.scss";
+@import "../../assets/styles-common/trip-price.scss";
+
+.trip-card {
+    display: flex;
+    flex-direction: column;
+    max-width: 320px;
+    background-color: var(--color-white);
+    border-radius: 1px;
+    box-shadow: var(--shadow);
+
+    img {
+        height: 100%;
+      }
+  }
+  
+  .trip-card__content {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 20px 30px;
+  }
