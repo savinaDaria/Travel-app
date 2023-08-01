@@ -1,13 +1,42 @@
-import { AppRoute } from '../../enums/app-route.enum';
+import { AppRoute } from '../../constants/enums/app-route.enum';
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import briefcaseSVG from '../../assets/images/briefcase.svg';
 import userSVG from '../../assets/images/user.svg';
 import styles from './styles.module.scss';
+import { toast } from 'react-toastify'
+import { signOut } from '../../slices/auth.slice'
+import { StoreState } from '../../slices/store';
+import { setUser } from '../../slices/auth.slice';
+import { useDispatch, useSelector } from 'react-redux';
+import { useGetUserQuery } from '../../slices/api.slice';
+
 const Header = () => {
     const navigate = useNavigate();
     const { pathname } = useLocation();
+    const dispatch = useDispatch()
+    const { data, isLoading, error } = useGetUserQuery();
+    if (data) {
+        const userStorage = localStorage.getItem('currentUser');
+        if (userStorage) {
+            const token = JSON.parse(userStorage).token;
+            dispatch(setUser({
+                id: data.id,
+                fullName: data.fullName,
+                email: data.email,
+                createdAt: data.createdAt,
+                token: token
+            }))
+        }
+    }
+    const { name } = useSelector((state: StoreState) => ({
+        name: state.auth.fullName
+    }));
     const showNavigation = !(pathname === AppRoute.SIGNIN || pathname === AppRoute.SIGNUP);
-
+    const handleSignOut = () => {
+        dispatch(signOut())
+        toast.success('User sign out successfully')
+        navigate(AppRoute.SIGNIN)
+    }
     return (
         <header className={styles.header}>
             <div className={styles['header__inner']}>
@@ -42,13 +71,13 @@ const Header = () => {
                                             data-test-id="header-profile-nav-username"
                                             className={`${styles['profile-nav__item']} ${styles['profile-nav__username']}`}
                                         >
-                                            John Doe
+                                            {name}
                                         </li>
                                         <li className={styles['profile-nav__item']}>
                                             <button
                                                 data-test-id="header-profile-nav-sign-out"
                                                 className={`${styles['profile-nav__sign-out']} button`}
-                                                onClick={() => navigate(AppRoute.SIGNIN)}
+                                                onClick={handleSignOut}
                                             >
                                                 Sign Out
                                             </button>

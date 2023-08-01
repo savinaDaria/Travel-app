@@ -1,7 +1,7 @@
 import styles from './styles.module.scss';
 import { TripProps } from '../../models';
 import { Link} from "react-router-dom";
-import { AppRoute } from '../../enums/app-route.enum';
+import { AppRoute } from '../../constants/enums/app-route.enum';
 
 const TripCard: React.FC<TripProps> = ({ trip }) => {
     const {

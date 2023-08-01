@@ -1,16 +1,22 @@
 import styles from './styles.module.scss';
-import { TripOverviewProps, Trip, Booking } from '../../models';
+import { Trip } from '../../models';
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from 'react';
 import { BookTripPopup } from '../book-trip-popup/book-trip-popup';
-const TripOverview: React.FC<TripOverviewProps> = ({ tripList,onBookingCreate }) => {
+import { useGetTripByIdQuery } from '../../slices/api.slice';
+
+const TripOverview = () => {
     const params = useParams();
     const tripId=params.tripId;
+
     const [trip, setTrip] = useState<Trip | null>(null);
     const [toggleBookTripModal,setToggleBookTripModal]=useState(false);
+    const { data, isLoading, error } = useGetTripByIdQuery(tripId as string)
     useEffect(() => {
-        setTrip(tripList.find(t => t.id === tripId) || null)
-    }, [params]);
+        if (data) {
+            setTrip(data)
+        }
+    }, [data])
     const handleOpenBookTripModal=()=>{
         const toggleValue=true;
         setToggleBookTripModal(toggleValue);
@@ -19,9 +25,7 @@ const TripOverview: React.FC<TripOverviewProps> = ({ tripList,onBookingCreate })
         const toggleValue=false;
         setToggleBookTripModal(toggleValue);
     }
-    const handleBookingSubmit=(booking:Booking)=>{
-        if(booking) onBookingCreate(booking);
-    }
+
     return (
         <main className={styles['trip-page']}>
             <h1 className={'visually-hidden'}>Travel App</h1>
@@ -74,7 +78,6 @@ const TripOverview: React.FC<TripOverviewProps> = ({ tripList,onBookingCreate })
                     {toggleBookTripModal && <BookTripPopup 
                     trip={trip} 
                     onClose={handleCloseBookTripModal}
-                    onSubmit={handleBookingSubmit}
                      />}
                 </div>
             </div>)}

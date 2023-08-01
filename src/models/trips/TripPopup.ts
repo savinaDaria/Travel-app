@@ -1,10 +1,9 @@
 import { Trip } from "./Trip";
-import { Booking } from "./Booking";
+import { Booking } from "../booking/Booking";
 
 interface TripPopupProps {
     trip: Trip;
     onClose: () => void;
-    onSubmit:(booking:Booking) =>void;
 
 }
 

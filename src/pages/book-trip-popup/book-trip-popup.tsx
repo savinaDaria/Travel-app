@@ -1,44 +1,60 @@
 import styles from './styles.module.scss';
 import { Booking, TripPopupProps } from '../../models';
-import { useState} from 'react';
+import { useEffect, useState } from 'react';
 import { getStandartDate } from '../../helpers/date.helpers';
-const BookTripPopup: React.FC<TripPopupProps> = ({ trip, onClose,onSubmit }) => {
-    const todayDate =getStandartDate(new Date().toString());
-    const [guests, setGuests] = useState(1);
-    const [totalPrice, setTotalPrice] = useState(guests*trip.price);
-    const [tripStartDate, setTripStartDate] = useState(todayDate);
+import { useAddBookingMutation } from '../../slices/api.slice';
+import { toast } from 'react-toastify';
+import { setBookingsList,addBooking } from '../../slices/booking.slice'
+import { useDispatch, useSelector } from 'react-redux';
+import { StoreState } from '../../slices/store';
 
+const BookTripPopup: React.FC<TripPopupProps> = ({ trip, onClose }) => {
+    const todayDate = getStandartDate(new Date().toString());
+    const [guests, setGuests] = useState(1);
+    const [totalPrice, setTotalPrice] = useState(guests * trip.price);
+    const [tripStartDate, setTripStartDate] = useState(todayDate);
+    const { id: userId } = useSelector((state: StoreState) => ({
+        id: state.auth.id
+    }))
+    const [addBooking, { isSuccess, isError, error }] = useAddBookingMutation()
     const handleSetGuestNumber = (e: React.FormEvent<HTMLInputElement>) => {
         const guestValue = parseInt(e.currentTarget.value);
         const totalPriceValue = guestValue * trip.price;
         setGuests(guestValue);
         setTotalPrice(totalPriceValue);
     }
-    const handleBookTripSubmit=(e:React.MouseEvent<HTMLButtonElement>)=>{
+    const dispatch = useDispatch();
+    const handleBookTripSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
-        const createdAtTime=Date.now().toString();
-        const booking={
-            id:crypto.randomUUID.toString(),
-            tripId:trip.id,
-            trip:{
-                title:trip.title,
-                duration:trip.duration,
-                price:trip.price
-            },
-            userId:'',
+        const booking = {
+            tripId: trip.id,
+            userId,
             guests,
-            date: tripStartDate,
-            totalPrice,
-            createdAt: createdAtTime
+            date: tripStartDate
         }
-        onSubmit(booking as Booking);
-        onClose();
+        const result = await addBooking(booking as Booking);
+        const added= await result.data;
+        const {bookings}=useSelector(((state:StoreState) => ({
+            bookings: state.bookings.bookings
+          })));
+          bookings.push(added);
+          dispatch(setBookingsList(bookings));
+        // dispatch(setBookingsList(addedBooking));
     };
     const handleSetDate = (e: React.FormEvent<HTMLInputElement>) => {
         const dateValue = e.currentTarget.value;
         setTripStartDate(dateValue);
     }
-    
+
+    useEffect(() => {
+        if (isSuccess) {
+            toast.success('Booking added successfully')
+            onClose();
+        }
+        if (isError) {
+            toast.error((error as any).data.message)
+        }
+    }, [isSuccess, isError])
     return (
         <div className="modal">
             <div data-test-id="book-trip-popup" className={styles["book-trip-popup"]}>

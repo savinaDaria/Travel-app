@@ -7,9 +7,11 @@ const sortBookingsByDateDescending = (bookingsNotSorted: Booking[]): Booking[] =
     });
 };
 const getStandartDate = (date: string): string => {
-    const d = new Date(date);
-    const mGet = d.getMonth() + 1;
-    const m=mGet<10?`0`+mGet:mGet
-    return `${d.getFullYear()}-${m}-${d.getDate()}`;
+    const fullDate = new Date(date);
+    const month = fullDate.getMonth() + 1;
+    const monthFormatted=month<10?`0`+month:month
+    const day=fullDate.getDate();
+    const dayFormatted=day<10?`0`+day:day;
+    return `${fullDate.getFullYear()}-${monthFormatted}-${dayFormatted}`;
 };
 export { sortBookingsByDateDescending, getStandartDate };
